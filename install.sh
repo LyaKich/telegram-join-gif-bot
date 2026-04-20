@@ -23,6 +23,16 @@ set -euo pipefail
 
 REPO_SLUG="telegram-join-gif-bot"
 
+# При «curl … | bash» stdin = скрипт; read съедает строки кода → обрыв парсера и ошибки у «fi».
+# Все интерактивные вопросы читаем с терминала.
+read_tty() {
+  if [[ -r /dev/tty ]] && [[ -w /dev/tty ]]; then
+    read "$@" </dev/tty
+  else
+    read "$@"
+  fi
+}
+
 is_truthy() {
   case "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" in
     1|y|yes|true|on) return 0 ;;
@@ -220,7 +230,7 @@ interactive_wizard() {
   local token gif_id gif_url echo_mode echo_ids yn
 
   if [[ -z "${BOT_TOKEN:-}" ]]; then
-    read -rsp "Введите BOT_TOKEN от @BotFather (ввод скрыт): " token
+    read_tty -rsp "Введите BOT_TOKEN от @BotFather (ввод скрыт): " token
     echo ""
     BOT_TOKEN="$token"
   fi
@@ -231,20 +241,20 @@ interactive_wizard() {
 
   echo ""
   echo "Приветственная гифка для группы:"
-  read -rp "Уже есть WELCOME_GIF_FILE_ID? Вставьте или Enter, чтобы пропустить: " gif_id
+  read_tty -rp "Уже есть WELCOME_GIF_FILE_ID? Вставьте или Enter, чтобы пропустить: " gif_id
   WELCOME_GIF_FILE_ID="${gif_id:-}"
   if [[ -z "$WELCOME_GIF_FILE_ID" ]]; then
-    read -rp "Или WELCOME_GIF_URL (HTTPS)? Enter — пропустить: " gif_url
+    read_tty -rp "Или WELCOME_GIF_URL (HTTPS)? Enter — пропустить: " gif_url
     WELCOME_GIF_URL="${gif_url:-}"
   else
     WELCOME_GIF_URL=""
   fi
 
   if [[ -z "$WELCOME_GIF_FILE_ID" && -z "${WELCOME_GIF_URL:-}" ]]; then
-    read -rp "Гифка пока не задана. Включить ECHO_FILE_ID_MODE для получения file_id в личке? [y/N]: " yn
+    read_tty -rp "Гифка пока не задана. Включить ECHO_FILE_ID_MODE для получения file_id в личке? [y/N]: " yn
     if is_truthy "$yn"; then
       ECHO_FILE_ID_MODE=1
-      read -rp "Ограничить эхо списком user id (через запятую)? Enter — без ограничения: " echo_ids
+      read_tty -rp "Ограничить эхо списком user id (через запятую)? Enter — без ограничения: " echo_ids
       ECHO_ALLOWED_USER_IDS="${echo_ids:-}"
     else
       ECHO_FILE_ID_MODE=0
@@ -252,10 +262,10 @@ interactive_wizard() {
       echo "Без гифки и без эхо бот не сможет стартовать. Завершите настройку .env вручную." >&2
     fi
   else
-    read -rp "Включить ECHO_FILE_ID_MODE (получение file_id в личке)? [y/N]: " yn
+    read_tty -rp "Включить ECHO_FILE_ID_MODE (получение file_id в личке)? [y/N]: " yn
     if is_truthy "$yn"; then
       ECHO_FILE_ID_MODE=1
-      read -rp "ECHO_ALLOWED_USER_IDS (через запятую)? Enter — без ограничения: " echo_ids
+      read_tty -rp "ECHO_ALLOWED_USER_IDS (через запятую)? Enter — без ограничения: " echo_ids
       ECHO_ALLOWED_USER_IDS="${echo_ids:-}"
     else
       ECHO_FILE_ID_MODE=0
@@ -290,11 +300,11 @@ else
   if [[ -z "$OWNER_REPO" ]]; then
     sug="$(suggest_github_repo)"
     if [[ -n "$sug" ]]; then
-      read -rp "GitHub: логин/org [${sug%%/*}] или полностью owner/repo [${sug}]: " ans
+      read_tty -rp "GitHub: логин/org [${sug%%/*}] или полностью owner/repo [${sug}]: " ans
       ans="${ans:-$sug}"
       OWNER_REPO="$(normalize_owner_repo "$ans")"
     else
-      read -rp "GitHub логин/org (будет клон ${REPO_SLUG}) или owner/repo: " ans
+      read_tty -rp "GitHub логин/org (будет клон ${REPO_SLUG}) или owner/repo: " ans
       OWNER_REPO="$(normalize_owner_repo "$ans")"
     fi
   fi
@@ -308,7 +318,7 @@ else
   }
 
   if [[ -z "${2:-}" ]]; then
-    read -rp "Каталог установки [${INSTALL_DIR}]: " ans
+    read_tty -rp "Каталог установки [${INSTALL_DIR}]: " ans
     INSTALL_DIR="${ans:-$INSTALL_DIR}"
   fi
 
@@ -331,12 +341,12 @@ if [[ -n "${TG_JOIN_GIF_NONINTERACTIVE:-}" ]]; then
   exit 0
 fi
 
-read -rp "Установить и запустить systemd-сервис (Linux с systemd)? [y/N]: " yn
+read_tty -rp "Установить и запустить systemd-сервис (Linux с systemd)? [y/N]: " yn
 if is_truthy "$yn"; then
   if install_systemd "$ROOT"; then
     echo "Готово. Бот работает как systemd-сервис."
   else
-    read -rp "Запустить бота сейчас в foreground (Ctrl+C — остановить)? [y/N]: " yn2
+    read_tty -rp "Запустить бота сейчас в foreground (Ctrl+C — остановить)? [y/N]: " yn2
     if is_truthy "$yn2"; then
       exec "$ROOT/.venv/bin/python" "$ROOT/bot.py"
     else
@@ -344,7 +354,7 @@ if is_truthy "$yn"; then
     fi
   fi
 else
-  read -rp "Запустить бота сейчас в foreground (Ctrl+C — остановить)? [y/N]: " yn2
+  read_tty -rp "Запустить бота сейчас в foreground (Ctrl+C — остановить)? [y/N]: " yn2
   if is_truthy "$yn2"; then
     exec "$ROOT/.venv/bin/python" "$ROOT/bot.py"
   else
