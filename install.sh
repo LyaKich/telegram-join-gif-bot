@@ -18,6 +18,9 @@
 #
 # Без запросов (CI):
 #   TG_JOIN_GIF_NONINTERACTIVE=1 BOT_TOKEN=... WELCOME_GIF_FILE_ID=... bash install.sh
+#
+# Повторный запуск: если в каталоге проекта уже есть .env — интерактивные вопросы и
+# перезапись .env пропускаются. Заново: удалите .env или TG_JOIN_GIF_FORCE_RECONFIGURE=1.
 
 set -euo pipefail
 
@@ -163,8 +166,12 @@ write_env_file() {
 install_venv() {
   local root="$1"
   need_cmd python3
-  echo "Создаю виртуальное окружение…"
-  python3 -m venv "$root/.venv"
+  if [[ -x "$root/.venv/bin/python" ]]; then
+    echo "Окружение $root/.venv уже есть — обновляю pip и зависимости…"
+  else
+    echo "Создаю виртуальное окружение…"
+    python3 -m venv "$root/.venv"
+  fi
   "$root/.venv/bin/pip" install -q --upgrade pip
   "$root/.venv/bin/pip" install -q -r "$root/requirements.txt"
   echo "Зависимости установлены в $root/.venv"
@@ -214,6 +221,13 @@ EOF
 
 interactive_wizard() {
   local root="$1"
+
+  if [[ -z "${TG_JOIN_GIF_NONINTERACTIVE:-}" ]] && [[ -f "$root/.env" ]] \
+    && ! is_truthy "${TG_JOIN_GIF_FORCE_RECONFIGURE:-}"; then
+    echo "Найден существующий $root/.env — настройки не перезаписываются."
+    echo "Изменить вручную: nano $root/.env  либо удалите файл / запустите с TG_JOIN_GIF_FORCE_RECONFIGURE=1."
+    return
+  fi
 
   if [[ -n "${TG_JOIN_GIF_NONINTERACTIVE:-}" ]]; then
     : "${BOT_TOKEN:?Задайте BOT_TOKEN для режима без запросов}"
