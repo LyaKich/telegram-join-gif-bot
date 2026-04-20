@@ -18,7 +18,18 @@
 - Зависимости: см. [`requirements.txt`](requirements.txt).
 - Для сценария «одна команда»: **bash**, **git**, доступ к **GitHub** по HTTPS.
 
+### Клонирование для разработки
+
+```bash
+git clone https://github.com/OWNER/telegram-join-gif-bot.git
+cd telegram-join-gif-bot
+```
+
+Дальше — раздел [«Установка вручную»](#установка-вручную) или запуск [`install.sh`](install.sh) из уже склонированного каталога.
+
 ## Быстрый старт (одна команда)
+
+Репозиторий **`OWNER/telegram-join-gif-bot`** на GitHub уже должен существовать и в нём должна быть ветка **`main`** с файлом **`install.sh`** (как в этом проекте).
 
 Подставьте **OWNER** — ваш логин или организация на GitHub, где лежит репозиторий **`telegram-join-gif-bot`**:
 
@@ -245,19 +256,35 @@ sudo systemctl restart telegram-join-gif-bot.service
 
 ## Публикация и релиз на GitHub
 
-1. Создайте **новый пустой** репозиторий `telegram-join-gif-bot` в своём аккаунте или организации ([инструкция GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository)).
-2. В каталоге проекта:
+1. Создайте **новый** репозиторий `telegram-join-gif-bot` в своём аккаунте или организации ([инструкция GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository)). Удобно **без** автоматического README, чтобы не мешал первому `push`.
+
+2. **Первый push** из каталога с кодом (подставьте `OWNER`):
 
 ```bash
-git init
-git branch -M main
+git init             # только если в каталоге ещё нет .git
+git branch -M main   # если ветка ещё не main
 git add .
+git status           # убедитесь, что .env и .venv не попали в коммит
 git commit -m "Initial commit: Telegram join GIF bot"
 git remote add origin https://github.com/OWNER/telegram-join-gif-bot.git
 git push -u origin main
 ```
 
-3. Создайте **тег** версии (пример `v1.0.0`):
+Если `origin` уже добавлен: `git remote set-url origin https://github.com/OWNER/telegram-join-gif-bot.git`.
+
+Если репозиторий на GitHub **уже создан** с файлами (README и т.д.), перед первым push может понадобиться:  
+`git pull origin main --rebase` или слияние несвязанных историй — см. [документацию](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts).
+
+**SSH** (если настроен ключ в GitHub):
+
+```bash
+git remote add origin git@github.com:OWNER/telegram-join-gif-bot.git
+git push -u origin main
+```
+
+Если `git push` **«висит»** без ошибки, чаще всего ждёт ввода логина/пароля в невидимом режиме: используйте [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) вместо пароля для HTTPS, перейдите на **SSH**, либо выполните `gh auth login` ([GitHub CLI](https://cli.github.com/)).
+
+3. **Тег** версии (пример `v1.0.0`) и отправка на GitHub:
 
 ```bash
 git tag -a v1.0.0 -m "Release v1.0.0"
@@ -265,11 +292,25 @@ git push origin v1.0.0
 ```
 
 4. В веб-интерфейсе GitHub: **Releases** → **Create a new release** → выберите тег `v1.0.0`, опишите изменения, опубликуйте.  
-   Либо из [GitHub CLI](https://cli.github.com/): `gh release create v1.0.0 --title "v1.0.0" --notes-file CHANGELOG.md`.
+   Либо: `gh release create v1.0.0 --title "v1.0.0" --notes-file CHANGELOG.md`.
+
+### Уже есть локальный `git init`
+
+Не создавайте репозиторий заново: достаточно `git remote add origin …` (или `git remote set-url origin …`), затем `git push -u origin main` и при наличии тегов — `git push origin --tags`.
 
 Скрипт установки по умолчанию читается с ветки **`main`**:  
 `https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh`  
 После релиза в описании можно дать ту же команду с URL на **конкретный тег** (файл совпадает с исходниками на теге).
+
+### Структура репозитория
+
+| Файл / каталог | Назначение |
+|----------------|------------|
+| [`bot.py`](bot.py) | Логика бота |
+| [`install.sh`](install.sh) | Интерактивная установка и опционально systemd |
+| [`.env.example`](.env.example) | Шаблон переменных окружения |
+| [`requirements.txt`](requirements.txt) | Зависимости Python |
+| [`CHANGELOG.md`](CHANGELOG.md) | Заметки к релизам |
 
 ## Лицензия
 
