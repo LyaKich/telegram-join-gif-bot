@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Telegram-бот: при системном сообщении о вступлении в группу отправляет GIF.
+Telegram-бот: при системном сообщении о вступлении в группу отправляет GIF;
+в личке по /start — та же гифка (если задана WELCOME_GIF_*), затем текст настроек.
 
 Переменные окружения (см. также /settings в личке с ботом):
 
@@ -27,6 +28,7 @@ import sys
 
 from telegram import Update
 from telegram.constants import ChatType
+from telegram.error import Conflict
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
 try:
@@ -39,6 +41,19 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
+
+
+async def on_ptb_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Снимает «No error handlers are registered» и даёт понятный текст для типовых ошибок."""
+    err = context.error
+    if isinstance(err, Conflict):
+        logger.warning(
+            "Telegram Conflict (getUpdates): с этим BOT_TOKEN уже идёт long polling "
+            "в другом процессе. Оставьте один экземпляр: проверьте systemd + ручной "
+            "запуск, вторую ВМ или webhook на том же боте."
+        )
+        return
+    logger.error("Необработанное исключение", exc_info=err)
 
 
 def _env_truthy(name: str) -> bool:
@@ -85,6 +100,28 @@ def _animation_source() -> str | None:
 
 def _welcome_configured() -> bool:
     return _animation_source() is not None
+
+
+async def _send_welcome_animation(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    """Отправляет анимацию из WELCOME_GIF_* ответом на сообщение пользователя."""
+    animation = _animation_source()
+    chat = update.effective_chat
+    msg = update.message
+    if not animation or not chat or not msg:
+        return
+    try:
+        await context.bot.send_animation(
+            chat_id=chat.id,
+            animation=animation,
+            reply_to_message_id=msg.message_id,
+        )
+    except Exception:
+        logger.exception(
+            "Не удалось отправить приветственную GIF (chat_id=%s)", chat.id
+        )
 
 
 def _lines_media_file_ids(update: Update) -> list[str]:
@@ -163,6 +200,7 @@ def _settings_text() -> str:
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.effective_chat or update.effective_chat.type != ChatType.PRIVATE:
         return
+    await _send_welcome_animation(update, context)
     await update.message.reply_text(
         "Бот шлёт GIF ответом на сообщение о <b>новом участнике</b> в группе.\n\n"
         + _settings_text(),
@@ -211,21 +249,13 @@ async def on_new_chat_members(
     chat = update.effective_chat
     if not chat:
         return
-    animation = _animation_source()
-    if not animation:
+    if not _animation_source():
         logger.warning(
             "Новый участник в chat_id=%s, но WELCOME_GIF не задан — пропуск",
             chat.id,
         )
         return
-    try:
-        await context.bot.send_animation(
-            chat_id=chat.id,
-            animation=animation,
-            reply_to_message_id=update.message.message_id,
-        )
-    except Exception:
-        logger.exception("Не удалось отправить GIF в chat_id=%s", chat.id)
+    await _send_welcome_animation(update, context)
 
 
 def _build_private_media_filter() -> filters.BaseFilter:
@@ -278,6 +308,7 @@ def main() -> None:
     app.add_handler(
         MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, on_new_chat_members)
     )
+    app.add_error_handler(on_ptb_error)
 
     logger.info("Бот запущен (long polling); echo_file_id=%s", echo_on)
     app.run_polling(allowed_updates=Update.ALL_TYPES)
