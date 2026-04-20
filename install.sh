@@ -4,17 +4,17 @@
 # Запуск из уже склонированного репозитория:
 #   chmod +x install.sh && ./install.sh
 #
-# Одна команда с GitHub (OWNER — логин или org; репозиторий по умолчанию telegram-join-gif-bot):
-#   curl -fsSL https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh | bash -s -- OWNER
+# Одна команда с GitHub (логин или org; репозиторий по умолчанию telegram-join-gif-bot; ниже — lyakich):
+#   curl -fsSL https://raw.githubusercontent.com/lyakich/telegram-join-gif-bot/main/install.sh | bash -s -- lyakich
 #
 # Полная форма owner/repo и каталог установки:
-#   curl -fsSL https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh | bash -s -- OWNER/telegram-join-gif-bot /opt/telegram-join-gif-bot
+#   curl -fsSL https://raw.githubusercontent.com/lyakich/telegram-join-gif-bot/main/install.sh | bash -s -- lyakich/telegram-join-gif-bot /opt/telegram-join-gif-bot
 #
 # Репозиторий по умолчанию из окружения (если не передан аргумент):
-#   curl ... | env GITHUB_REPO=OWNER/telegram-join-gif-bot bash
+#   curl ... | env GITHUB_REPO=lyakich/telegram-join-gif-bot bash
 #
 # На минимальной Ubuntu без python3-venv:
-#   TG_JOIN_GIF_APT_INSTALL=1 curl ... | bash -s -- OWNER
+#   TG_JOIN_GIF_APT_INSTALL=1 curl ... | bash -s -- lyakich
 #
 # Без запросов (CI):
 #   TG_JOIN_GIF_NONINTERACTIVE=1 BOT_TOKEN=... WELCOME_GIF_FILE_ID=... bash install.sh
@@ -299,7 +299,7 @@ else
     fi
   fi
   [[ -n "$OWNER_REPO" ]] || {
-    echo "Укажите репозиторий: аргумент (OWNER или owner/repo), либо переменную GITHUB_REPO." >&2
+    echo "Укажите репозиторий: аргумент (логин GitHub или owner/repo), либо переменную GITHUB_REPO." >&2
     exit 1
   }
   [[ "$OWNER_REPO" == */* ]] || {

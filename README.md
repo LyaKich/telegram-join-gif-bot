@@ -21,7 +21,7 @@
 ### Клонирование для разработки
 
 ```bash
-git clone https://github.com/OWNER/telegram-join-gif-bot.git
+git clone https://github.com/lyakich/telegram-join-gif-bot.git
 cd telegram-join-gif-bot
 ```
 
@@ -29,30 +29,28 @@ cd telegram-join-gif-bot
 
 ## Быстрый старт (одна команда)
 
-Репозиторий **`OWNER/telegram-join-gif-bot`** на GitHub уже должен существовать и в нём должна быть ветка **`main`** с файлом **`install.sh`** (как в этом проекте).
-
-Подставьте **OWNER** — ваш логин или организация на GitHub, где лежит репозиторий **`telegram-join-gif-bot`**:
+Репозиторий **[lyakich/telegram-join-gif-bot](https://github.com/lyakich/telegram-join-gif-bot)** на GitHub уже должен быть доступен; в ветке **`main`** лежит **`install.sh`**. Для своего форка замените **`lyakich`** в URL и в аргументе на свой логин или организацию.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh | bash -s -- OWNER
+curl -fsSL https://raw.githubusercontent.com/lyakich/telegram-join-gif-bot/main/install.sh | bash -s -- lyakich
 ```
 
 Эквивалентно полному имени репозитория:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh | bash -s -- OWNER/telegram-join-gif-bot
+curl -fsSL https://raw.githubusercontent.com/lyakich/telegram-join-gif-bot/main/install.sh | bash -s -- lyakich/telegram-join-gif-bot
 ```
 
 Необязательный **второй аргумент** — каталог установки (по умолчанию `~/telegram-join-gif-bot`):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh | bash -s -- OWNER /opt/telegram-join-gif-bot
+curl -fsSL https://raw.githubusercontent.com/lyakich/telegram-join-gif-bot/main/install.sh | bash -s -- lyakich /opt/telegram-join-gif-bot
 ```
 
 На «голой» Ubuntu без пакета `python3-venv` (одной строкой с установкой зависимостей через `apt`):
 
 ```bash
-TG_JOIN_GIF_APT_INSTALL=1 curl -fsSL https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh | bash -s -- OWNER
+TG_JOIN_GIF_APT_INSTALL=1 curl -fsSL https://raw.githubusercontent.com/lyakich/telegram-join-gif-bot/main/install.sh | bash -s -- lyakich
 ```
 
 Если репозиторий уже склонирован:
@@ -148,8 +146,8 @@ python bot.py
 1. Войдите в [консоль Yandex Cloud](https://console.cloud.yandex.ru/) и выберите **каталог** (folder), где будет ВМ.
 2. Убедитесь, что есть **подсеть** в нужной зоне доступности (при создании ВМ её можно создать мастером).
 3. **Группа безопасности** (или правила на уровне сети) для ВМ:
-   - **Исходящий** трафик: разрешить **HTTPS (443)** в интернет (для Bot API).
-   - **Входящий** (по желанию): **SSH (22)** только с ваших IP — для администрирования. Публичный IP ВМ не обязателен, если подключаетесь через [Bastion](https://cloud.yandex.ru/docs/tutorials/security/bastion/) или другой способ, но для простейшего варианта чаще выдают публичный IPv4 и открывают 22 ограниченно.
+    - **Исходящий** трафик: разрешить **HTTPS (443)** в интернет (для Bot API).
+    - **Входящий** (по желанию): **SSH (22)** только с ваших IP — для администрирования. Публичный IP ВМ не обязателен, если подключаетесь через [Bastion](https://cloud.yandex.ru/docs/tutorials/security/bastion/) или другой способ, но для простейшего варианта чаще выдают публичный IPv4 и открывают 22 ограниченно.
 
 Подробнее о создании ВМ: [документация Compute Cloud](https://cloud.yandex.ru/docs/compute/operations/vm-create/create-linux-vm).
 
@@ -171,7 +169,7 @@ python bot.py
 ssh -i ~/.ssh/your_key ubuntu@<PUBLIC_IP>
 ```
 
-**Быстрее:** на ВМ достаточно выполнить одну команду из раздела [«Быстрый старт»](#быстрый-старт-одна-команда) (подставьте свой `OWNER` и при необходимости `TG_JOIN_GIF_APT_INSTALL=1`).
+**Быстрее:** на ВМ достаточно выполнить одну команду из раздела [«Быстрый старт»](#быстрый-старт-одна-команда) (при необходимости добавьте `TG_JOIN_GIF_APT_INSTALL=1`; для форка замените `lyakich` в URL и в аргументе).
 
 Ручной перенос кода (если не используете `install.sh`):
 
@@ -180,7 +178,7 @@ sudo apt update && sudo apt install -y python3-venv python3-pip git curl
 sudo mkdir -p /opt/telegram-join-gif-bot
 sudo chown "$USER":"$USER" /opt/telegram-join-gif-bot
 cd /opt/telegram-join-gif-bot
-git clone https://github.com/OWNER/telegram-join-gif-bot.git .
+git clone https://github.com/lyakich/telegram-join-gif-bot.git .
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env
@@ -258,7 +256,7 @@ sudo systemctl restart telegram-join-gif-bot.service
 
 1. Создайте **новый** репозиторий `telegram-join-gif-bot` в своём аккаунте или организации ([инструкция GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository)). Удобно **без** автоматического README, чтобы не мешал первому `push`.
 
-2. **Первый push** из каталога с кодом (подставьте `OWNER`):
+2. **Первый push** из каталога с кодом (для этого репозитория — `lyakich`; для форка замените на свой логин):
 
 ```bash
 git init             # только если в каталоге ещё нет .git
@@ -266,11 +264,11 @@ git branch -M main   # если ветка ещё не main
 git add .
 git status           # убедитесь, что .env и .venv не попали в коммит
 git commit -m "Initial commit: Telegram join GIF bot"
-git remote add origin https://github.com/OWNER/telegram-join-gif-bot.git
+git remote add origin https://github.com/lyakich/telegram-join-gif-bot.git
 git push -u origin main
 ```
 
-Если `origin` уже добавлен: `git remote set-url origin https://github.com/OWNER/telegram-join-gif-bot.git`.
+Если `origin` уже добавлен: `git remote set-url origin https://github.com/lyakich/telegram-join-gif-bot.git`.
 
 Если репозиторий на GitHub **уже создан** с файлами (README и т.д.), перед первым push может понадобиться:  
 `git pull origin main --rebase` или слияние несвязанных историй — см. [документацию](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts).
@@ -278,7 +276,7 @@ git push -u origin main
 **SSH** (если настроен ключ в GitHub):
 
 ```bash
-git remote add origin git@github.com:OWNER/telegram-join-gif-bot.git
+git remote add origin git@github.com:lyakich/telegram-join-gif-bot.git
 git push -u origin main
 ```
 
@@ -299,7 +297,7 @@ git push origin v1.0.0
 Не создавайте репозиторий заново: достаточно `git remote add origin …` (или `git remote set-url origin …`), затем `git push -u origin main` и при наличии тегов — `git push origin --tags`.
 
 Скрипт установки по умолчанию читается с ветки **`main`**:  
-`https://raw.githubusercontent.com/OWNER/telegram-join-gif-bot/main/install.sh`  
+`https://raw.githubusercontent.com/lyakich/telegram-join-gif-bot/main/install.sh`  
 После релиза в описании можно дать ту же команду с URL на **конкретный тег** (файл совпадает с исходниками на теге).
 
 ### Структура репозитория
